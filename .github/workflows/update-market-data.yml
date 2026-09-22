@@ -21,6 +21,8 @@ jobs:
           import json
           import os
           import urllib.request
+          import urllib.parse
+          import time
 
           key = os.environ["ALPHA_VANTAGE_API_KEY"]
 
@@ -36,23 +38,72 @@ jobs:
           data = {}
 
           for symbol in symbols:
-              url = (
-                  "https://www.alphavantage.co/query"
-                  f"?function=GLOBAL_QUOTE&symbol={symbol}&apikey={key}"
+
+              print(f"Fetching {symbol}...")
+
+              quote_url = (
+                  "https://www.alphavantage.co/query?"
+                  + urllib.parse.urlencode({
+                      "function": "GLOBAL_QUOTE",
+                      "symbol": symbol,
+                      "apikey": key
+                  })
               )
 
-              with urllib.request.urlopen(url) as response:
-                  result = json.load(response)
+              with urllib.request.urlopen(quote_url) as response:
+                  quote_result = json.load(response)
 
-              quote = result.get("Global Quote", {})
+              quote = quote_result.get("Global Quote", {})
+
+              history_url = (
+                  "https://www.alphavantage.co/query?"
+                  + urllib.parse.urlencode({
+                      "function": "TIME_SERIES_DAILY",
+                      "symbol": symbol,
+                      "outputsize": "compact",
+                      "apikey": key
+                  })
+              )
+
+              with urllib.request.urlopen(history_url) as response:
+                  history_result = json.load(response)
+
+              time_series = history_result.get(
+                  "Time Series (Daily)",
+                  {}
+              )
+
+              history = []
+
+              for date, values in sorted(
+                  time_series.items(),
+                  reverse=True
+              )[:30]:
+
+                  history.append({
+                      "date": date,
+                      "open": values.get("1. open"),
+                      "high": values.get("2. high"),
+                      "low": values.get("3. low"),
+                      "close": values.get("4. close"),
+                      "volume": values.get("5. volume")
+                  })
 
               data[symbol] = {
                   "price": quote.get("05. price", "—"),
-                  "change_percent": quote.get("10. change percent", "—")
+                  "change_percent": quote.get(
+                      "10. change percent",
+                      "—"
+                  ),
+                  "history": history
               }
+
+              time.sleep(2)
 
           with open("data.json", "w") as file:
               json.dump(data, file, indent=2)
+
+          print("Market data successfully updated.")
           PY
 
       - name: Commit updated data
