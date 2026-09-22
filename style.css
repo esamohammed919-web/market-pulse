@@ -1,0 +1,376 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: #f5f6f8;
+    color: #111827;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+/* HEADER */
+
+header {
+    height: 64px;
+    background: #0b0f19;
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 5%;
+
+    border-bottom: 1px solid #202636;
+}
+
+.logo {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+.logo-dot {
+    display: inline-block;
+
+    width: 9px;
+    height: 9px;
+
+    border-radius: 50%;
+
+    background: #62d394;
+
+    margin-right: 9px;
+}
+
+.market-status {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+
+/* MAIN */
+
+main {
+    max-width: 1180px;
+
+    margin: auto;
+
+    padding: 55px 24px 80px;
+}
+
+
+/* HERO */
+
+.hero {
+    display: flex;
+
+    justify-content: space-between;
+    align-items: flex-end;
+
+    gap: 30px;
+
+    margin-bottom: 48px;
+}
+
+.eyebrow {
+    font-size: 12px;
+
+    font-weight: 800;
+
+    letter-spacing: 0.14em;
+
+    color: #6b7280;
+
+    margin-bottom: 12px;
+}
+
+.hero h1 {
+    font-size: 48px;
+
+    line-height: 1;
+
+    letter-spacing: -0.04em;
+
+    margin-bottom: 15px;
+}
+
+.subtitle {
+    color: #6b7280;
+
+    max-width: 620px;
+
+    font-size: 16px;
+
+    line-height: 1.5;
+}
+
+.date {
+    font-size: 13px;
+
+    color: #6b7280;
+
+    white-space: nowrap;
+}
+
+
+/* SECTION HEADINGS */
+
+.section-heading {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin: 28px 0 14px;
+}
+
+.section-heading h2 {
+    font-size: 18px;
+}
+
+.section-heading span {
+    font-size: 12px;
+
+    color: #9ca3af;
+}
+
+
+/* MARKET CARDS */
+
+.market-grid {
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 12px;
+}
+
+.market-card {
+    background: white;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 14px;
+
+    padding: 18px;
+
+    transition: transform 0.15s ease,
+                box-shadow 0.15s ease;
+}
+
+.market-card:hover {
+    transform: translateY(-3px);
+
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.ticker {
+    font-size: 12px;
+
+    font-weight: 700;
+
+    color: #6b7280;
+}
+
+.market-name {
+    font-size: 15px;
+
+    font-weight: 700;
+
+    margin-top: 7px;
+
+    margin-bottom: 15px;
+}
+
+.market-price {
+    font-size: 24px;
+
+    font-weight: 800;
+
+    letter-spacing: -0.02em;
+}
+
+.market-change {
+    font-size: 13px;
+
+    font-weight: 700;
+
+    margin-top: 7px;
+}
+
+.up {
+    color: #16834a;
+}
+
+.down {
+    color: #c2413a;
+}
+
+.neutral {
+    color: #6b7280;
+}
+
+
+/* NEWS */
+
+.news-section {
+    margin-top: 50px;
+}
+
+.news-grid {
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 14px;
+}
+
+.news-card {
+    background: white;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 14px;
+
+    padding: 21px;
+
+    transition: transform 0.15s ease,
+                box-shadow 0.15s ease;
+}
+
+.news-card:hover {
+    transform: translateY(-3px);
+
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.tag {
+    font-size: 10px;
+
+    font-weight: 800;
+
+    letter-spacing: 0.12em;
+
+    color: #6b7280;
+}
+
+.news-card h3 {
+    font-size: 17px;
+
+    line-height: 1.3;
+
+    margin: 10px 0;
+}
+
+.news-card p {
+    font-size: 13px;
+
+    line-height: 1.55;
+
+    color: #6b7280;
+
+    margin-bottom: 17px;
+}
+
+.news-card small {
+    font-size: 11px;
+
+    color: #9ca3af;
+}
+
+
+/* DISCLAIMER */
+
+.disclaimer {
+    margin-top: 32px;
+
+    background: #eef1f5;
+
+    border-radius: 14px;
+
+    padding: 18px 20px;
+
+    font-size: 13px;
+
+    color: #4b5563;
+}
+
+.disclaimer p {
+    margin-top: 7px;
+
+    line-height: 1.5;
+}
+
+
+/* FOOTER */
+
+footer {
+    border-top: 1px solid #e5e7eb;
+
+    padding: 22px 5%;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    font-size: 11px;
+
+    color: #9ca3af;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 800px) {
+
+    .market-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .news-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero {
+        display: block;
+    }
+
+    .date {
+        margin-top: 18px;
+    }
+}
+
+
+@media (max-width: 500px) {
+
+    .market-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero h1 {
+        font-size: 38px;
+    }
+
+    .market-status {
+        display: none;
+    }
+
+    main {
+        padding: 35px 16px 60px;
+    }
+
+    footer {
+        display: block;
+    }
+
+    footer span {
+        display: block;
+
+        margin-top: 6px;
+    }
+}
