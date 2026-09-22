@@ -1,5 +1,6 @@
 // ===============================
-// MARKET PULSE V2
+// MARKET PULSE
+// Live market data + 30-day charts
 // ===============================
 
 const indexes = [
@@ -34,12 +35,48 @@ const indexes = [
 ];
 
 const stocks = [
-    { ticker: "NVDA", name: "NVIDIA", price: "—", change: "Loading...", direction: "neutral" },
-    { ticker: "GOOGL", name: "Alphabet", price: "—", change: "Loading...", direction: "neutral" },
-    { ticker: "AAPL", name: "Apple", price: "—", change: "Loading...", direction: "neutral" },
-    { ticker: "MSFT", name: "Microsoft", price: "—", change: "Loading...", direction: "neutral" },
-    { ticker: "AMZN", name: "Amazon", price: "—", change: "Loading...", direction: "neutral" },
-    { ticker: "TSLA", name: "Tesla", price: "—", change: "Loading...", direction: "neutral" }
+    {
+        ticker: "NVDA",
+        name: "NVIDIA",
+        price: "—",
+        change: "Loading...",
+        direction: "neutral"
+    },
+    {
+        ticker: "GOOGL",
+        name: "Alphabet",
+        price: "—",
+        change: "Loading...",
+        direction: "neutral"
+    },
+    {
+        ticker: "AAPL",
+        name: "Apple",
+        price: "—",
+        change: "Loading...",
+        direction: "neutral"
+    },
+    {
+        ticker: "MSFT",
+        name: "Microsoft",
+        price: "—",
+        change: "Loading...",
+        direction: "neutral"
+    },
+    {
+        ticker: "AMZN",
+        name: "Amazon",
+        price: "—",
+        change: "Loading...",
+        direction: "neutral"
+    },
+    {
+        ticker: "TSLA",
+        name: "Tesla",
+        price: "—",
+        change: "Loading...",
+        direction: "neutral"
+    }
 ];
 
 let liveData = {};
@@ -49,6 +86,7 @@ let liveData = {};
 // ===============================
 
 function renderMarkets(data, containerId) {
+
     const container = document.getElementById(containerId);
 
     if (!container) return;
@@ -76,18 +114,22 @@ function renderMarkets(data, containerId) {
                 ${market.change}
             </div>
 
-            <div class="view-chart">
-                View chart →
-            </div>
+            ${
+                containerId === "stocks"
+                    ? `<div class="view-chart">View chart →</div>`
+                    : ""
+            }
         `;
 
-        // Make stock cards clickable
+        // Only stocks currently have charts
         if (containerId === "stocks") {
+
+            card.style.cursor = "pointer";
+
             card.addEventListener("click", () => {
                 openChart(market.ticker);
             });
 
-            card.style.cursor = "pointer";
         }
 
         container.appendChild(card);
@@ -95,14 +137,16 @@ function renderMarkets(data, containerId) {
 }
 
 // ===============================
-// LOAD MARKET DATA
+// LOAD LIVE DATA
 // ===============================
 
 async function loadLiveData() {
 
     try {
 
-        const response = await fetch("data.json");
+        const response = await fetch("data.json", {
+            cache: "no-store"
+        });
 
         if (!response.ok) {
             throw new Error("Could not load data.json");
@@ -110,29 +154,42 @@ async function loadLiveData() {
 
         liveData = await response.json();
 
+        console.log("Market data loaded:", liveData);
+
         stocks.forEach(stock => {
 
             const live = liveData[stock.ticker];
 
             if (!live) return;
 
-            if (live.price && live.price !== "—") {
-                stock.price =
-                    `$${Number(live.price).toFixed(2)}`;
+            // Price
+            if (
+                live.price !== undefined &&
+                live.price !== null &&
+                live.price !== "—"
+            ) {
+
+                const price = Number(live.price);
+
+                if (Number.isFinite(price)) {
+                    stock.price = `$${price.toFixed(2)}`;
+                }
             }
 
+            // Daily change
             if (
-                live.change_percent &&
+                live.change_percent !== undefined &&
+                live.change_percent !== null &&
                 live.change_percent !== "—"
             ) {
 
                 stock.change = live.change_percent;
 
-                if (live.change_percent.startsWith("+")) {
+                if (String(live.change_percent).startsWith("+")) {
                     stock.direction = "up";
                 }
 
-                else if (live.change_percent.startsWith("-")) {
+                else if (String(live.change_percent).startsWith("-")) {
                     stock.direction = "down";
                 }
 
@@ -164,11 +221,16 @@ async function loadLiveData() {
 
 function createChartModal() {
 
+    if (document.getElementById("chart-modal")) {
+        return;
+    }
+
     const modal = document.createElement("div");
 
     modal.id = "chart-modal";
 
     modal.innerHTML = `
+
         <div class="chart-overlay"></div>
 
         <div class="chart-window">
@@ -184,25 +246,44 @@ function createChartModal() {
             <div class="chart-header">
 
                 <div>
-                    <div class="chart-ticker" id="chart-ticker">
+
+                    <div
+                        class="chart-ticker"
+                        id="chart-ticker"
+                    >
                         —
                     </div>
 
                     <h2 id="chart-name">
                         —
                     </h2>
+
                 </div>
 
                 <div class="chart-stats">
 
                     <div>
-                        <span>Price</span>
-                        <strong id="chart-price">—</strong>
+
+                        <span>
+                            Price
+                        </span>
+
+                        <strong id="chart-price">
+                            —
+                        </strong>
+
                     </div>
 
                     <div>
-                        <span>Daily change</span>
-                        <strong id="chart-change">—</strong>
+
+                        <span>
+                            Daily change
+                        </span>
+
+                        <strong id="chart-change">
+                            —
+                        </strong>
+
                     </div>
 
                 </div>
@@ -210,17 +291,23 @@ function createChartModal() {
             </div>
 
             <div class="chart-controls">
+
                 <button class="chart-period active">
                     30D
                 </button>
+
             </div>
 
             <div class="chart-container">
+
                 <canvas id="price-chart"></canvas>
+
             </div>
 
             <div class="chart-footer">
+
                 Historical daily closing prices · Market Pulse
+
             </div>
 
         </div>
@@ -228,13 +315,27 @@ function createChartModal() {
 
     document.body.appendChild(modal);
 
-    document
-        .getElementById("chart-close")
-        .addEventListener("click", closeChart);
+    // Close button
+    const closeButton =
+        document.getElementById("chart-close");
 
-    document
-        .querySelector(".chart-overlay")
-        .addEventListener("click", closeChart);
+    if (closeButton) {
+        closeButton.addEventListener(
+            "click",
+            closeChart
+        );
+    }
+
+    // Click outside chart
+    const overlay =
+        modal.querySelector(".chart-overlay");
+
+    if (overlay) {
+        overlay.addEventListener(
+            "click",
+            closeChart
+        );
+    }
 }
 
 // ===============================
@@ -249,7 +350,19 @@ function openChart(ticker) {
 
     const data = liveData[ticker];
 
-    if (!stock || !data) {
+    if (!stock) {
+        console.error(
+            "Stock not found:",
+            ticker
+        );
+        return;
+    }
+
+    if (!data) {
+        console.error(
+            "No live data found for:",
+            ticker
+        );
         return;
     }
 
@@ -260,16 +373,21 @@ function openChart(ticker) {
     const modal =
         document.getElementById("chart-modal");
 
+    // Open modal
     modal.classList.add("open");
 
-    document.getElementById("chart-ticker")
-        .textContent = stock.ticker;
+    // Fill chart information
+    document.getElementById(
+        "chart-ticker"
+    ).textContent = stock.ticker;
 
-    document.getElementById("chart-name")
-        .textContent = stock.name;
+    document.getElementById(
+        "chart-name"
+    ).textContent = stock.name;
 
-    document.getElementById("chart-price")
-        .textContent = stock.price;
+    document.getElementById(
+        "chart-price"
+    ).textContent = stock.price;
 
     const changeElement =
         document.getElementById("chart-change");
@@ -280,7 +398,18 @@ function openChart(ticker) {
     changeElement.className =
         stock.direction;
 
-    drawChart(data.history);
+    // IMPORTANT:
+    // Wait until the modal has actually rendered
+    // before measuring the chart width.
+    requestAnimationFrame(() => {
+
+        requestAnimationFrame(() => {
+
+            drawChart(data.history);
+
+        });
+
+    });
 }
 
 // ===============================
@@ -292,20 +421,113 @@ function drawChart(history) {
     const canvas =
         document.getElementById("price-chart");
 
+    if (!canvas) return;
+
     const ctx =
         canvas.getContext("2d");
 
     const container =
         canvas.parentElement;
 
+    if (!container) return;
+
+    // No history
+    if (!Array.isArray(history) || history.length === 0) {
+
+        const width =
+            Math.max(
+                container.clientWidth,
+                300
+            );
+
+        const height = 360;
+
+        const ratio =
+            window.devicePixelRatio || 1;
+
+        canvas.width =
+            width * ratio;
+
+        canvas.height =
+            height * ratio;
+
+        canvas.style.width =
+            `${width}px`;
+
+        canvas.style.height =
+            `${height}px`;
+
+        ctx.setTransform(
+            ratio,
+            0,
+            0,
+            ratio,
+            0,
+            0
+        );
+
+        ctx.clearRect(
+            0,
+            0,
+            width,
+            height
+        );
+
+        ctx.font =
+            "14px Arial";
+
+        ctx.fillStyle =
+            "#6b7280";
+
+        ctx.textAlign =
+            "center";
+
+        ctx.fillText(
+            "No historical data available",
+            width / 2,
+            height / 2
+        );
+
+        return;
+    }
+
+    // Alpha Vantage returns newest → oldest.
+    // Reverse so chart displays oldest → newest.
+    const points =
+        [...history]
+            .reverse()
+            .map(item => ({
+                date: item.date,
+                price: Number(item.close)
+            }))
+            .filter(
+                item =>
+                    Number.isFinite(item.price)
+            );
+
+    if (points.length < 2) {
+
+        console.error(
+            "Not enough chart data:",
+            points
+        );
+
+        return;
+    }
+
+    // Get actual visible width
     const width =
-        container.clientWidth;
+        Math.max(
+            container.clientWidth,
+            300
+        );
 
     const height = 360;
 
     const ratio =
         window.devicePixelRatio || 1;
 
+    // High-resolution canvas
     canvas.width =
         width * ratio;
 
@@ -318,35 +540,26 @@ function drawChart(history) {
     canvas.style.height =
         `${height}px`;
 
-    ctx.scale(ratio, ratio);
+    ctx.setTransform(
+        ratio,
+        0,
+        0,
+        ratio,
+        0,
+        0
+    );
 
-    if (!history || history.length === 0) {
-
-        ctx.font = "14px Arial";
-        ctx.fillStyle = "#6b7280";
-        ctx.textAlign = "center";
-
-        ctx.fillText(
-            "No historical data available",
-            width / 2,
-            height / 2
-        );
-
-        return;
-    }
-
-    // Alpha Vantage returns newest first.
-    // Reverse so the chart runs oldest → newest.
-    const points =
-        [...history]
-            .reverse()
-            .map(item => ({
-                date: item.date,
-                price: Number(item.close)
-            }));
+    ctx.clearRect(
+        0,
+        0,
+        width,
+        height
+    );
 
     const prices =
-        points.map(point => point.price);
+        points.map(
+            point => point.price
+        );
 
     const minPrice =
         Math.min(...prices);
@@ -356,9 +569,9 @@ function drawChart(history) {
 
     const padding = {
         top: 25,
-        right: 20,
-        bottom: 40,
-        left: 65
+        right: 25,
+        bottom: 45,
+        left: 70
     };
 
     const chartWidth =
@@ -374,119 +587,177 @@ function drawChart(history) {
     const range =
         maxPrice - minPrice || 1;
 
-    // Background
-    ctx.clearRect(
-        0,
-        0,
-        width,
-        height
-    );
+    // ===========================
+    // GRID
+    // ===========================
 
-    // Grid lines
-    ctx.strokeStyle = "#e5e7eb";
+    ctx.strokeStyle =
+        "#e5e7eb";
+
     ctx.lineWidth = 1;
 
-    for (let i = 0; i <= 4; i++) {
+    ctx.font =
+        "11px Arial";
+
+    ctx.textAlign =
+        "right";
+
+    for (
+        let i = 0;
+        i <= 4;
+        i++
+    ) {
 
         const y =
             padding.top +
             (chartHeight / 4) * i;
 
+        // Grid line
         ctx.beginPath();
-        ctx.moveTo(padding.left, y);
+
+        ctx.moveTo(
+            padding.left,
+            y
+        );
+
         ctx.lineTo(
             width - padding.right,
             y
         );
+
         ctx.stroke();
 
+        // Price label
         const value =
             maxPrice -
             (range / 4) * i;
 
-        ctx.fillStyle = "#9ca3af";
-        ctx.font = "11px Arial";
-        ctx.textAlign = "right";
+        ctx.fillStyle =
+            "#9ca3af";
 
         ctx.fillText(
-            `$${value.toFixed(2)}`,
+            "$" + value.toFixed(2),
             padding.left - 10,
             y + 4
         );
     }
 
-    // Chart line
+    // ===========================
+    // PRICE LINE
+    // ===========================
+
     ctx.beginPath();
 
-    points.forEach((point, index) => {
+    points.forEach(
+        (point, index) => {
 
-        const x =
-            padding.left +
-            (index / (points.length - 1 || 1))
-            * chartWidth;
+            const x =
+                padding.left +
+                (
+                    index /
+                    (points.length - 1)
+                ) *
+                chartWidth;
 
-        const y =
-            padding.top +
-            ((maxPrice - point.price) / range)
-            * chartHeight;
+            const y =
+                padding.top +
+                (
+                    (maxPrice - point.price) /
+                    range
+                ) *
+                chartHeight;
 
-        if (index === 0) {
-            ctx.moveTo(x, y);
-        } else {
-            ctx.lineTo(x, y);
+            if (index === 0) {
+
+                ctx.moveTo(x, y);
+
+            } else {
+
+                ctx.lineTo(x, y);
+
+            }
+
         }
-    });
+    );
 
-    ctx.strokeStyle = "#111827";
-    ctx.lineWidth = 2.5;
+    ctx.strokeStyle =
+        "#111827";
+
+    ctx.lineWidth = 3;
+
+    ctx.lineJoin =
+        "round";
+
+    ctx.lineCap =
+        "round";
+
     ctx.stroke();
 
-    // End point
+    // ===========================
+    // LAST PRICE DOT
+    // ===========================
+
     const last =
         points[points.length - 1];
 
     const lastX =
-        padding.left + chartWidth;
+        padding.left +
+        chartWidth;
 
     const lastY =
         padding.top +
-        ((maxPrice - last.price) / range)
-        * chartHeight;
+        (
+            (maxPrice - last.price) /
+            range
+        ) *
+        chartHeight;
 
     ctx.beginPath();
 
     ctx.arc(
         lastX,
         lastY,
-        4,
+        5,
         0,
         Math.PI * 2
     );
 
-    ctx.fillStyle = "#111827";
+    ctx.fillStyle =
+        "#111827";
+
     ctx.fill();
 
-    // Date labels
-    ctx.fillStyle = "#9ca3af";
-    ctx.font = "11px Arial";
-    ctx.textAlign = "center";
+    // ===========================
+    // DATE LABELS
+    // ===========================
 
-    const firstDate =
-        points[0].date;
+    ctx.fillStyle =
+        "#9ca3af";
 
-    const lastDate =
-        points[points.length - 1].date;
+    ctx.font =
+        "11px Arial";
+
+    ctx.textAlign =
+        "center";
 
     ctx.fillText(
-        firstDate,
+        points[0].date,
         padding.left,
         height - 12
     );
 
     ctx.fillText(
-        lastDate,
+        points[points.length - 1].date,
         width - padding.right,
         height - 12
+    );
+
+    console.log(
+        "Chart drawn:",
+        points.length,
+        "points",
+        width,
+        "px wide"
     );
 }
 
@@ -520,22 +791,69 @@ document.addEventListener(
 );
 
 // ===============================
-// CURRENT DATE
+// RESIZE CHART
+// ===============================
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        const modal =
+            document.getElementById(
+                "chart-modal"
+            );
+
+        if (
+            !modal ||
+            !modal.classList.contains("open")
+        ) {
+            return;
+        }
+
+        const ticker =
+            document.getElementById(
+                "chart-ticker"
+            ).textContent;
+
+        if (
+            ticker &&
+            liveData[ticker]
+        ) {
+
+            requestAnimationFrame(() => {
+
+                drawChart(
+                    liveData[ticker].history
+                );
+
+            });
+
+        }
+
+    }
+);
+
+// ===============================
+// DATE
 // ===============================
 
 const dateElement =
     document.getElementById("date");
 
-const today =
-    new Date();
+if (dateElement) {
 
-dateElement.textContent =
-    new Intl.DateTimeFormat(
-        "en-GB",
-        {
-            dateStyle: "full"
-        }
-    ).format(today);
+    const today =
+        new Date();
+
+    dateElement.textContent =
+        new Intl.DateTimeFormat(
+            "en-GB",
+            {
+                dateStyle: "full"
+            }
+        ).format(today);
+
+}
 
 // ===============================
 // START
