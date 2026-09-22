@@ -2,7 +2,7 @@ name: Update Market Data
 
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "0 */6 * * *"
   workflow_dispatch:
 
 jobs:
@@ -16,6 +16,7 @@ jobs:
       - name: Fetch market data
         env:
           ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
+
         run: |
           python - <<'PY'
           import json
@@ -41,21 +42,7 @@ jobs:
 
               print(f"Fetching {symbol}...")
 
-              quote_url = (
-                  "https://www.alphavantage.co/query?"
-                  + urllib.parse.urlencode({
-                      "function": "GLOBAL_QUOTE",
-                      "symbol": symbol,
-                      "apikey": key
-                  })
-              )
-
-              with urllib.request.urlopen(quote_url) as response:
-                  quote_result = json.load(response)
-
-              quote = quote_result.get("Global Quote", {})
-
-              history_url = (
+              url = (
                   "https://www.alphavantage.co/query?"
                   + urllib.parse.urlencode({
                       "function": "TIME_SERIES_DAILY",
@@ -65,20 +52,31 @@ jobs:
                   })
               )
 
-              with urllib.request.urlopen(history_url) as response:
-                  history_result = json.load(response)
+              with urllib.request.urlopen(url) as response:
+                  result = json.load(response)
 
-              time_series = history_result.get(
-                  "Time Series (Daily)",
-                  {}
+              time_series = result.get("Time Series (Daily)", {})
+
+              if not time_series:
+                  print(f"No historical data returned for {symbol}")
+                  print(result)
+                  data[symbol] = {
+                      "price": "—",
+                      "change_percent": "—",
+                      "history": []
+                  }
+                  continue
+
+              dates = sorted(
+                  time_series.keys(),
+                  reverse=True
               )
 
               history = []
 
-              for date, values in sorted(
-                  time_series.items(),
-                  reverse=True
-              )[:30]:
+              for date in dates[:30]:
+
+                  values = time_series[date]
 
                   history.append({
                       "date": date,
@@ -89,12 +87,22 @@ jobs:
                       "volume": values.get("5. volume")
                   })
 
+              latest_close = float(
+                  history[0]["close"]
+              )
+
+              previous_close = float(
+                  history[1]["close"]
+              )
+
+              change_percent = (
+                  (latest_close - previous_close)
+                  / previous_close
+              ) * 100
+
               data[symbol] = {
-                  "price": quote.get("05. price", "—"),
-                  "change_percent": quote.get(
-                      "10. change percent",
-                      "—"
-                  ),
+                  "price": f"{latest_close:.4f}",
+                  "change_percent": f"{change_percent:+.2f}%",
                   "history": history
               }
 
