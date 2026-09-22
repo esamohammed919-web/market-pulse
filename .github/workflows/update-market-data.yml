@@ -1,0 +1,67 @@
+name: Update Market Data
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fetch market data
+        env:
+          ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          key = os.environ["ALPHA_VANTAGE_API_KEY"]
+
+          symbols = [
+              "NVDA",
+              "GOOGL",
+              "AAPL",
+              "MSFT",
+              "AMZN",
+              "TSLA"
+          ]
+
+          data = {}
+
+          for symbol in symbols:
+              url = (
+                  "https://www.alphavantage.co/query"
+                  f"?function=GLOBAL_QUOTE&symbol={symbol}&apikey={key}"
+              )
+
+              with urllib.request.urlopen(url) as response:
+                  result = json.load(response)
+
+              quote = result.get("Global Quote", {})
+
+              data[symbol] = {
+                  "price": quote.get("05. price", "—"),
+                  "change_percent": quote.get("10. change percent", "—")
+              }
+
+          with open("data.json", "w") as file:
+              json.dump(data, file, indent=2)
+          PY
+
+      - name: Commit updated data
+        run: |
+          git config user.name "market-pulse-bot"
+          git config user.email "actions@github.com"
+
+          git add data.json
+
+          git diff --cached --quiet || git commit -m "Update market data"
+
+          git push
