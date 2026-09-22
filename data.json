@@ -1,32 +1,32 @@
 {
   "NVDA": {
-    "price": "228.8700",
-    "change_percent": "0.6553%",
+    "price": "\u2014",
+    "change_percent": "\u2014",
     "history": []
   },
   "GOOGL": {
-    "price": "351.1600",
-    "change_percent": "-1.0733%",
+    "price": "\u2014",
+    "change_percent": "\u2014",
     "history": []
   },
   "AAPL": {
-    "price": "339.7500",
-    "change_percent": "0.2272%",
+    "price": "\u2014",
+    "change_percent": "\u2014",
     "history": []
   },
   "MSFT": {
-    "price": "498.0000",
-    "change_percent": "-0.7197%",
+    "price": "\u2014",
+    "change_percent": "\u2014",
     "history": []
   },
   "AMZN": {
-    "price": "254.9800",
-    "change_percent": "-1.3426%",
+    "price": "\u2014",
+    "change_percent": "\u2014",
     "history": []
   },
   "TSLA": {
-    "price": "378.9000",
-    "change_percent": "0.9592%",
+    "price": "\u2014",
+    "change_percent": "\u2014",
     "history": []
   }
 }
